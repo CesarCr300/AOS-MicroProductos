@@ -11,8 +11,6 @@ import { AuditoryEntity } from '../../auditory/entities/auditory.entity';
 export class User extends AuditoryEntity implements EntityBase {
   @PrimaryGeneratedColumn({ name: 'int_id' })
   id: number;
-  @Column({ name: 'vch_username' })
-  username: string;
   @Column({ name: 'vch_email' })
   email: string;
   @Column({ name: 'vch_password' })

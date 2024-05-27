@@ -47,7 +47,6 @@ export class UserService extends ServiceBase<
       adapterFindOne: (e: User) => e,
       functionToCreateObjectToFindIfTheEntityAlreadyExists: (dto: any) => ({
         email: dto.email,
-        username: dto.username,
       }),
     });
   }
@@ -60,10 +59,9 @@ export class UserService extends ServiceBase<
   }
 
   async create(dto: CreateUserDto): Promise<User> {
-    const userFounded = await this._usersRepository.findOne(
-      {},
-      { where: [{ email: dto.email }, { username: dto.username }] },
-    );
+    const userFounded = await this._usersRepository.findOne({
+      email: dto.email,
+    });
     if (userFounded) {
       throw new HttpException('El usuario ya existe', HttpStatus.CONFLICT);
     }
@@ -101,15 +99,7 @@ export class UserService extends ServiceBase<
   async sendLinkToResetPassword(
     dto: GetLinkToResetPasswordUserDto,
   ): Promise<any> {
-    const user = await this._repository.findOne(
-      {},
-      {
-        where: [
-          { email: dto.emailOrUsername },
-          { username: dto.emailOrUsername },
-        ],
-      },
-    );
+    const user = await this._repository.findOne({ email: dto.emailOrUsername });
     //If the user does not exist, we do not send the email
     //and we have the same API response as if the user existed
     //because we do not want to give information about the existence of the user
