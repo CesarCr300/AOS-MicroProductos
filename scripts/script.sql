@@ -1,5 +1,5 @@
-create database haciendola_db character set utf8mb4 COLLATE utf8mb4_unicode_ci;
-use haciendola_db;
+create database aos_db character set utf8mb4 COLLATE utf8mb4_unicode_ci;
+use aos_db;
 
 create table tbl_user(
    int_id int auto_increment primary key,

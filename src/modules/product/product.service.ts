@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { ServiceBase } from '../../base/service.base';
 import {
   CreateProductDto,
@@ -9,8 +10,10 @@ import {
 } from './dtos';
 import { Product } from './entities/product.entity';
 import { ProductRepository } from './repositories/product.repository';
-import { fromProductToResponseAdapter } from './adapters/from-product-to-response.adapter';
-import { fromProductToResponseManyAdapter } from './adapters/from-product-to-response-many.adapter';
+import {
+  fromProductToResponseAdapter,
+  fromProductToResponseManyAdapter,
+} from './adapters';
 
 @Injectable()
 export class ProductService extends ServiceBase<
