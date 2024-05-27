@@ -88,3 +88,12 @@ For this to work, your new entity needs to extend the AuditoryEntity class, and 
 
 ## <a name="TestingandCoverage"></a>Testing and Coverage
 For the coverage and testing configuration I followed this [link](https://dev.to/rohithart/nestjs-unit-and-e2e-testing-7pb).# AOS-MicroProductos
+
+To connect to the MySQL Host server you need to execute this command:
+CREATE USER 'root'@'%' IDENTIFIED BY 'yourpassword';
+GRANT ALL PRIVILEGES ON database_name.* TO 'root'@'%';
+FLUSH PRIVILEGES;
+
+If you have another user, change the root name
+
+And change the bin-address from /etc/mysql/mysql.conf.d/mysqld.cnf to 0.0.0.0
