@@ -14,10 +14,7 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string) {
-    const user = await this._userRepository.findOne(
-      {},
-      { where: [{ email }, { username: email }] },
-    );
+    const user = await this._userRepository.findOne({}, { where: [{ email }] });
     if (user && (await HashingUtil.compare(password, user.password))) {
       return user;
     }
@@ -28,14 +25,12 @@ export class AuthService {
     const payload: UserPayload = {
       email: user.email,
       sub: user.id,
-      username: user.username,
     };
     return {
       access_token: this._jwt.sign(payload),
       name: user.name,
       lastName: user.lastName,
       email: user.email,
-      username: user.username,
     };
   }
 }

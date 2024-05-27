@@ -3,5 +3,4 @@ export interface LoginSuccessDto {
   name: string;
   lastName: string;
   email: string;
-  username: string;
 }
