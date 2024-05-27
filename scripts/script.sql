@@ -16,9 +16,9 @@ create table tbl_user(
 
 create table tbl_product(
     int_id int auto_increment primary key,
+    vch_name varchar(100) not null,
     vch_description varchar(3000) not null,
     int_stock int not null,
-    dec_weight_in_grams decimal(10,2) not null,
     dec_price decimal(10,2) not null,
     dat_deleted_at datetime null,
     int_created_by int not null,
