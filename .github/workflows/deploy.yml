@@ -1,0 +1,80 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+      DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+      DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+      DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_TOKEN_EXPIRES_IN: ${{ secrets.JWT_TOKEN_EXPIRES_IN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{secrets.DOCKER_USERNAME}}/micro-aos:${{github.sha}}
+          build-args: |
+            ISRGROOTX_CONTENT=${{secrets.ISRGROOTX_CONTENT}}
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+            docker rename micro-aos micro-aos-old || true
+            docker stop micro-aos-old || true
+            docker pull ${{secrets.DOCKER_USERNAME}}/micro-aos:${{github.sha}}
+            if docker run -d --name micro-aos -p 3000:3000 \
+            -e DATABASE_HOST=${{ secrets.DATABASE_HOST }} \
+            -e DATABASE_PORT=${{ secrets.DATABASE_PORT }} \
+            -e DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} \
+            -e DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
+            -e DATABASE_NAME=${{ secrets.DATABASE_NAME }} \
+            -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            -e JWT_TOKEN_EXPIRES_IN=${{ secrets.JWT_TOKEN_EXPIRES_IN }} \
+            -e TIDB_ENABLE_SSL=${{secrets.TIDB_ENABLE_SSL}} \
+            -e TIDB_CA_PATH=${{secrets.TIDB_CA_PATH}} \
+            ${{secrets.DOCKER_USERNAME}}/micro-aos:${{github.sha}}; then
+              echo "New container is running"
+              docker rm micro-aos-old || true
+            else
+              echo "New container is not running"
+              docker rm micro-aos || true
+              docker rename micro-aos-old micro-aos || true
+              docker start micro-aos -p 3000:3000 \
+              -e DATABASE_HOST=${{ secrets.DATABASE_HOST }} \
+              -e DATABASE_PORT=${{ secrets.DATABASE_PORT }} \
+              -e DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} \
+              -e DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
+              -e DATABASE_NAME=${{ secrets.DATABASE_NAME }} \
+              -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+              -e JWT_TOKEN_EXPIRES_IN=${{ secrets.JWT_TOKEN_EXPIRES_IN }} \
+              -e TIDB_ENABLE_SSL=${{secrets.TIDB_ENABLE_SSL}} \
+              -e TIDB_CA_PATH=${{secrets.TIDB_CA_PATH}}|| true
+              exit 1
+            fi
+            docker image prune -f -a
