@@ -48,7 +48,7 @@ jobs:
             docker rename micro-aos micro-aos-old || true
             docker stop micro-aos-old || true
             docker pull ${{secrets.DOCKER_USERNAME}}/micro-aos:${{github.sha}}
-            if docker run -d --name micro-aos -p 3000:3000 \
+            if docker run -d --name micro-aos -p ${{secrets.PORT}}:${{secrets.PORT}} \
             -e DATABASE_HOST=${{ secrets.DATABASE_HOST }} \
             -e DATABASE_PORT=${{ secrets.DATABASE_PORT }} \
             -e DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} \
@@ -58,6 +58,7 @@ jobs:
             -e JWT_TOKEN_EXPIRES_IN=${{ secrets.JWT_TOKEN_EXPIRES_IN }} \
             -e TIDB_ENABLE_SSL=${{secrets.TIDB_ENABLE_SSL}} \
             -e TIDB_CA_PATH=${{secrets.TIDB_CA_PATH}} \
+            -e PORT=${{secrets.PORT}} \
             ${{secrets.DOCKER_USERNAME}}/micro-aos:${{github.sha}}; then
               echo "New container is running"
               docker rm micro-aos-old || true
