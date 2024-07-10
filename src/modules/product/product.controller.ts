@@ -12,6 +12,7 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { ProductService } from './product.service';
 import { CreateProductDto, FilterProductDto, UpdateProductDto } from './dtos';
+import { Public } from '../auth/utils/isPublic';
 
 @Controller('products')
 @ApiTags('products')
@@ -24,11 +25,13 @@ export class ProductController {
   }
 
   @Get()
+  @Public()
   findAll(@Query() filter: FilterProductDto) {
     return this.productsService.findAll(filter);
   }
 
   @Get(':id')
+  @Public()
   findOne(@Param('id') id: number) {
     return this.productsService.findOne({ id });
   }
