@@ -14,6 +14,9 @@ export class Product extends AuditoryEntity {
   @Column({ name: 'vch_name', length: 100 })
   name: string;
 
+  @Column({ name: 'vch_name', length: 255 })
+  imageKey: string;
+
   @Column({ name: 'vch_description', length: 3000 })
   description: string;
 
