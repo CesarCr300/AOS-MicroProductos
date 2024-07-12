@@ -1,0 +1,1 @@
+alter table tbl_product add vch_image_key varchar(255) null;
