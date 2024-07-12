@@ -7,12 +7,15 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 
 import { ProductService } from './product.service';
 import { CreateProductDto, FilterProductDto, UpdateProductDto } from './dtos';
 import { Public } from '../auth/utils/isPublic';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('products')
 @ApiTags('products')
@@ -20,7 +23,17 @@ export class ProductController {
   constructor(private readonly productsService: ProductService) {}
 
   @Post()
-  create(@Body() createProductDto: CreateProductDto) {
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Create product',
+    type: CreateProductDto,
+  })
+  create(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() createProductDto: CreateProductDto,
+  ) {
+    createProductDto.file = file;
     return this.productsService.create(createProductDto);
   }
 
