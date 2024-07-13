@@ -16,6 +16,7 @@ import {
   fromProductToResponseManyAdapter,
 } from './adapters';
 import { IImageManagerService } from '../../services/interfaces/image-manager.interface.service';
+import { FindManyOptions, ObjectLiteral } from 'typeorm';
 
 @Injectable()
 export class ProductService extends ServiceBase<
@@ -40,7 +41,7 @@ export class ProductService extends ServiceBase<
       resourceName: 'producto',
       requiresValidationInUpdate: true,
       requiresValidationInCreation: true,
-      adapterFindAll: fromProductToResponseManyAdapter,
+      adapterFindAll: fromProductToResponseManyAdapter as any,
       adapterFindOne: fromProductToResponseAdapter,
       functionToCreateObjectToFindIfTheEntityAlreadyExists: (
         dto: Product | CreateProductDto,
@@ -94,5 +95,25 @@ export class ProductService extends ServiceBase<
     }
     this.imageManagerService.deleteImage(oldImageKey);
     return product;
+  }
+
+  async findAll(
+    dto?: FilterProductDto,
+    options?: FindManyOptions<ObjectLiteral>,
+  ): Promise<ResponseManyProductDto[]> {
+    const products = await this._productRepository.findAll(dto, options);
+    const imageUrls = {};
+    await Promise.all(
+      products.map(async (product) => {
+        if (product.imageKey == null) return;
+        const url = await this.imageManagerService.getImageUrl(
+          product.imageKey,
+        );
+        imageUrls[product.imageKey] = url;
+      }),
+    );
+    return products.map((product) =>
+      fromProductToResponseManyAdapter(product, imageUrls[product.imageKey]),
+    );
   }
 }
