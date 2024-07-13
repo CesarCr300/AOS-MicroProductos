@@ -1,4 +1,4 @@
-import { HttpException, Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ManagedUpload } from 'aws-sdk/clients/s3';
 
 import { ServiceBase } from '../../base/service.base';
@@ -16,7 +16,7 @@ import {
   fromProductToResponseManyAdapter,
 } from './adapters';
 import { IImageManagerService } from '../../services/interfaces/image-manager.interface.service';
-import { FindManyOptions, ObjectLiteral } from 'typeorm';
+import { FindManyOptions, FindOneOptions, ObjectLiteral } from 'typeorm';
 
 @Injectable()
 export class ProductService extends ServiceBase<
@@ -42,9 +42,9 @@ export class ProductService extends ServiceBase<
       requiresValidationInUpdate: true,
       requiresValidationInCreation: true,
       adapterFindAll: fromProductToResponseManyAdapter as any,
-      adapterFindOne: fromProductToResponseAdapter,
+      adapterFindOne: fromProductToResponseAdapter as any,
       functionToCreateObjectToFindIfTheEntityAlreadyExists: (
-        dto: Product | CreateProductDto,
+        dto: ResponseProductDto | CreateProductDto,
       ) => ({
         name: dto.name,
       }),
@@ -115,5 +115,21 @@ export class ProductService extends ServiceBase<
     return products.map((product) =>
       fromProductToResponseManyAdapter(product, imageUrls[product.imageKey]),
     );
+  }
+
+  async findOne(
+    filter: FilterProductDto,
+    options?: FindOneOptions<ObjectLiteral>,
+  ): Promise<ResponseProductDto> {
+    const product = await this._productRepository.findOne(filter, options);
+    if (product == null)
+      throw new HttpException(
+        `No se ha encontrado el producto`,
+        HttpStatus.NOT_FOUND,
+      );
+    const imageUrl = product.imageKey
+      ? await this.imageManagerService.getImageUrl(product.imageKey)
+      : null;
+    return fromProductToResponseAdapter(product, imageUrl);
   }
 }

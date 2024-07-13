@@ -4,4 +4,5 @@ export class ResponseProductDto {
   description: string;
   stock: number;
   price: number;
+  imageUrl: string;
 }
