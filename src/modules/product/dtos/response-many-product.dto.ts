@@ -3,4 +3,5 @@ export class ResponseManyProductDto {
   name: string;
   stock: number;
   price: number;
+  imageUrl: string;
 }
