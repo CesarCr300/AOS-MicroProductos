@@ -15,7 +15,22 @@ export class ImageManagerS3Service implements IImageManagerService {
       region: process.env.AWS_REGION,
     });
   }
-  async deleteImage(): Promise<void> {}
+
+  async deleteImage(key: string): Promise<boolean> {
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+
+    const params = {
+      Bucket: bucketName,
+      Key: key,
+    };
+
+    try {
+      await this.s3.deleteObject(params).promise();
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
 
   async uploadImage(
     file: Express.Multer.File,
