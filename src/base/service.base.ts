@@ -115,18 +115,12 @@ export class ServiceBase<
     return entityCreated;
   }
 
-  async update(id: number, dto: TUpdateDto) {
-    if (Object.keys(dto).length == 0)
-      throw new HttpException(
-        `No se estan registrando cambios en ${this._article} ${this._resourceName}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-
-    const entity = await this.findOne({ id } as any);
+  protected async getEntityValidatedToUpdate(id: number, dto: TUpdateDto) {
+    const entity = await this._repository.findOne({ id } as any);
     if (this._requiresValidationInUpdate) {
       const valuesToFilter =
         this._functionToCreateObjectToFindIfTheEntityAlreadyExists({
-          ...entity,
+          ...(entity as any),
           ...dto,
         });
       const entityFounded = await this._repository.findOne({
@@ -139,6 +133,17 @@ export class ServiceBase<
           HttpStatus.CONFLICT,
         );
     }
+    return entity;
+  }
+
+  async update(id: number, dto: TUpdateDto) {
+    if (Object.keys(dto).length == 0)
+      throw new HttpException(
+        `No se estan registrando cambios en ${this._article} ${this._resourceName}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+
+    await this.getEntityValidatedToUpdate(id, dto);
 
     const result = await this._repository.update(id, dto);
     if (result.affected == 0)

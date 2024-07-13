@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumberString, IsString } from 'class-validator';
 
 export class UpdateProductDto {
   @IsNotEmpty()
@@ -7,8 +8,13 @@ export class UpdateProductDto {
   @IsNotEmpty()
   @IsString()
   description: string;
-  @IsNumber()
+  @IsNumberString()
   stock: number;
-  @IsNumber()
+  @IsNumberString()
   price: number;
+
+  @ApiProperty({ type: 'string', format: 'binary' })
+  file: any;
+
+  imageKey: string;
 }
