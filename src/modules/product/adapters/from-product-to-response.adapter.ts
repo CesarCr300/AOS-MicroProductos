@@ -3,6 +3,7 @@ import { Product } from '../entities/product.entity';
 
 export const fromProductToResponseAdapter = (
   product: Product,
+  imageUrl: string,
 ): ResponseProductDto => {
   return {
     id: product.id,
@@ -10,5 +11,6 @@ export const fromProductToResponseAdapter = (
     description: product.description,
     price: product.price,
     stock: product.stock,
+    imageUrl,
   };
 };
